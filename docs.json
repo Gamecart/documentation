@@ -7,32 +7,73 @@
     "light": "#c77dff",
     "dark": "#6b1fa8"
   },
+  "appearance": {
+    "default": "dark"
+  },
+  "icons": {
+    "library": "lucide"
+  },
+  "background": {
+    "decoration": "grid",
+    "color": {
+      "light": "#ffffff",
+      "dark": "#050607"
+    }
+  },
+  "styling": {
+    "eyebrows": "section",
+    "codeblocks": "dark"
+  },
   "favicon": "/favicon.svg",
   "navigation": {
-    "pages": [
+    "tabs": [
       {
-        "group": "Getting started",
-        "pages": [
-          "index",
-          "quickstart"
+        "tab": "Documentation",
+        "icon": "book-open",
+        "groups": [
+          {
+            "group": "Getting started",
+            "pages": [
+              "index",
+              "quickstart"
+            ]
+          }
         ]
       },
       {
-        "group": "Tutorials",
-        "pages": [
-          "tutorials/overview"
+        "tab": "Tutorials",
+        "icon": "graduation-cap",
+        "groups": [
+          {
+            "group": "Tutorials",
+            "pages": [
+              "tutorials/overview"
+            ]
+          }
         ]
       },
       {
-        "group": "API reference",
-        "pages": [
-          "api-reference/overview"
+        "tab": "API reference",
+        "icon": "code-2",
+        "groups": [
+          {
+            "group": "API reference",
+            "pages": [
+              "api-reference/overview"
+            ]
+          }
         ]
       },
       {
-        "group": "Webhooks",
-        "pages": [
-          "webhooks/overview"
+        "tab": "Webhooks",
+        "icon": "radio-tower",
+        "groups": [
+          {
+            "group": "Webhooks",
+            "pages": [
+              "webhooks/overview"
+            ]
+          }
         ]
       }
     ],
@@ -44,16 +85,17 @@
           "icon": "globe"
         },
         {
-          "anchor": "Community",
+          "anchor": "Discord",
           "href": "https://discord.gg/gamecart",
-          "icon": "comments"
+          "icon": "message-circle"
         }
       ]
     }
   },
   "logo": {
     "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "dark": "/logo/dark.svg",
+    "href": "https://gamecart.gg"
   },
   "navbar": {
     "links": [

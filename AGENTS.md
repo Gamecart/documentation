@@ -21,6 +21,9 @@
 ## Style preferences
 
 - Public documentation is written in English by default.
+- Visual direction is dark-first, product-focused, and Gamecart-branded: use the violet palette, restrained surfaces, and only small secondary emerald accents.
+- Do not copy another docs site's green branding, layout details, or copy. Use references only to match structure and quality level.
+- Keep editorial visuals in local documentation assets such as `assets/`; they must not imply unverified product features or API contracts.
 - Internal vault documentation in `.docs/` remains Portuguese-BR.
 - Use active voice and second person ("you").
 - Keep sentences concise: one idea per sentence.

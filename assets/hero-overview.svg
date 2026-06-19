@@ -1,0 +1,101 @@
+<svg width="1120" height="620" viewBox="0 0 1120 620" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Gamecart documentation overview</title>
+  <desc id="desc">A dark Gamecart documentation hero with a violet brand mark, storefront workflow cards, and integration signals.</desc>
+  <defs>
+    <linearGradient id="panel" x1="58" y1="35" x2="1018" y2="596" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#101018"/>
+      <stop offset="0.52" stop-color="#07060d"/>
+      <stop offset="1" stop-color="#120719"/>
+    </linearGradient>
+    <linearGradient id="brandCard" x1="394" y1="110" x2="719" y2="432" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#c77dff"/>
+      <stop offset="0.5" stop-color="#b355fe"/>
+      <stop offset="1" stop-color="#6b1fa8"/>
+    </linearGradient>
+    <linearGradient id="chip" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#20142f"/>
+      <stop offset="1" stop-color="#0c0b12"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(570 270) rotate(90) scale(260 420)">
+      <stop stop-color="#b355fe" stop-opacity="0.42"/>
+      <stop offset="0.58" stop-color="#6b1fa8" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#050607" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="38" height="38" patternUnits="userSpaceOnUse">
+      <path d="M38 0H0V38" stroke="#2c173d" stroke-width="1" opacity="0.5"/>
+    </pattern>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="32" stdDeviation="28" flood-color="#000000" flood-opacity="0.48"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="34" flood-color="#b355fe" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+
+  <rect width="1120" height="620" rx="34" fill="#050607"/>
+  <rect x="1" y="1" width="1118" height="618" rx="33" fill="url(#panel)" stroke="#241431" stroke-width="2"/>
+  <rect x="1" y="1" width="1118" height="618" rx="33" fill="url(#grid)" opacity="0.18"/>
+  <rect width="1120" height="620" rx="34" fill="url(#glow)"/>
+
+  <g opacity="0.92">
+    <rect x="70" y="64" width="156" height="34" rx="17" fill="#0b0a12" stroke="#2f1843"/>
+    <circle cx="92" cy="81" r="6" fill="#14f195"/>
+    <text x="110" y="86" fill="#f4eaff" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700">GAMECART DOCS</text>
+
+    <text x="70" y="150" fill="#ffffff" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="38" font-weight="800">Launch faster. Deliver cleaner.</text>
+    <text x="70" y="188" fill="#beb5ca" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="19" font-weight="500">Guides for stores, payments, server delivery, APIs, and webhooks.</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="408" y="114" width="304" height="304" rx="68" fill="url(#brandCard)"/>
+    <rect x="426" y="132" width="268" height="268" rx="54" fill="#090611" fill-opacity="0.24" stroke="#e7c6ff" stroke-opacity="0.42" stroke-width="2"/>
+    <rect x="444" y="150" width="232" height="232" rx="42" fill="#11081c" fill-opacity="0.36"/>
+    <path d="M487 222C487 206.5 499.5 194 515 194H621V226H524V314H621V346H515C499.5 346 487 333.5 487 318V222Z" fill="#ffffff"/>
+    <path d="M556 258H646V290H556V258Z" fill="#ffffff"/>
+    <path d="M508 367H612" stroke="#14f195" stroke-width="8" stroke-linecap="round" opacity="0.8"/>
+  </g>
+
+  <g>
+    <rect x="70" y="268" width="240" height="66" rx="16" fill="url(#chip)" stroke="#2d1b3d"/>
+    <circle cx="104" cy="301" r="14" fill="#b355fe"/>
+    <path d="M99 301L103 305L111 295" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="132" y="296" fill="#ffffff" font-family="Inter, ui-sans-serif, system-ui" font-size="16" font-weight="700">Store setup</text>
+    <text x="132" y="316" fill="#a99fb7" font-family="Inter, ui-sans-serif, system-ui" font-size="13" font-weight="500">Products, pricing, storefront</text>
+
+    <rect x="70" y="354" width="240" height="66" rx="16" fill="url(#chip)" stroke="#2d1b3d"/>
+    <circle cx="104" cy="387" r="14" fill="#14f195"/>
+    <path d="M96 386H112M104 378V394" stroke="#07100b" stroke-width="3" stroke-linecap="round"/>
+    <text x="132" y="382" fill="#ffffff" font-family="Inter, ui-sans-serif, system-ui" font-size="16" font-weight="700">Payment routing</text>
+    <text x="132" y="402" fill="#a99fb7" font-family="Inter, ui-sans-serif, system-ui" font-size="13" font-weight="500">Gateway availability owned by Gamecart</text>
+
+    <rect x="70" y="440" width="240" height="66" rx="16" fill="url(#chip)" stroke="#2d1b3d"/>
+    <circle cx="104" cy="473" r="14" fill="#6b1fa8"/>
+    <path d="M97 473H111M104 466V480" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+    <text x="132" y="468" fill="#ffffff" font-family="Inter, ui-sans-serif, system-ui" font-size="16" font-weight="700">Server delivery</text>
+    <text x="132" y="488" fill="#a99fb7" font-family="Inter, ui-sans-serif, system-ui" font-size="13" font-weight="500">Approved orders become commands</text>
+  </g>
+
+  <g>
+    <rect x="812" y="250" width="238" height="176" rx="20" fill="#08070d" stroke="#2d1b3d"/>
+    <rect x="834" y="275" width="92" height="24" rx="12" fill="#1b1028"/>
+    <text x="850" y="292" fill="#dcb7ff" font-family="Inter, ui-sans-serif, system-ui" font-size="12" font-weight="800">COMING NEXT</text>
+    <text x="834" y="335" fill="#ffffff" font-family="Inter, ui-sans-serif, system-ui" font-size="26" font-weight="800">API and webhooks</text>
+    <text x="834" y="366" fill="#a99fb7" font-family="Inter, ui-sans-serif, system-ui" font-size="15" font-weight="500">Reference docs will be generated or verified from backend contracts before publishing.</text>
+    <path d="M836 394H1026" stroke="#2d1b3d" stroke-width="2"/>
+    <text x="834" y="408" fill="#14f195" font-family="Inter, ui-sans-serif, system-ui" font-size="13" font-weight="800">OpenAPI-ready structure</text>
+  </g>
+
+  <g opacity="0.9">
+    <path d="M310 301H376" stroke="#3a2050" stroke-width="3" stroke-linecap="round"/>
+    <path d="M376 301L362 292M376 301L362 310" stroke="#3a2050" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M744 329H788" stroke="#3a2050" stroke-width="3" stroke-linecap="round"/>
+    <path d="M788 329L774 320M788 329L774 338" stroke="#3a2050" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <g>
+    <rect x="384" y="484" width="352" height="66" rx="18" fill="#08070d" stroke="#2d1b3d"/>
+    <circle cx="420" cy="517" r="12" fill="#b355fe"/>
+    <circle cx="456" cy="517" r="12" fill="#c77dff"/>
+    <circle cx="492" cy="517" r="12" fill="#14f195"/>
+    <text x="532" y="512" fill="#ffffff" font-family="Inter, ui-sans-serif, system-ui" font-size="16" font-weight="800">Docs that follow the product contract</text>
+    <text x="532" y="532" fill="#a99fb7" font-family="Inter, ui-sans-serif, system-ui" font-size="13" font-weight="500">No stale payloads. No internal secrets. No guessed behavior.</text>
+  </g>
+</svg>
