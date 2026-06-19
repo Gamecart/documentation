@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Gamecart Docs",
+  "name": "Gamecart",
   "colors": {
     "primary": "#b355fe",
     "light": "#c77dff",
@@ -14,9 +14,8 @@
     "library": "lucide"
   },
   "background": {
-    "decoration": "grid",
     "color": {
-      "light": "#ffffff",
+      "light": "#fbf7ff",
       "dark": "#050607"
     }
   },
@@ -93,8 +92,8 @@
     }
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg",
+    "light": "/logo/gamecart-wordmark-light.png",
+    "dark": "/logo/gamecart-wordmark-dark.png",
     "href": "https://gamecart.gg"
   },
   "navbar": {
@@ -109,17 +108,5 @@
       "label": "Dashboard",
       "href": "https://dash.gamecart.gg"
     }
-  },
-  "contextual": {
-    "options": [
-      "copy",
-      "view",
-      "chatgpt",
-      "claude",
-      "perplexity",
-      "mcp",
-      "cursor",
-      "vscode"
-    ]
   }
 }
