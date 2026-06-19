@@ -1,47 +1,45 @@
 ---
 title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+description: "Launch the first version of your Gamecart store"
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
+This guide gives you the shortest path from a new Gamecart account to a storefront that can receive real orders.
 
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
+It stays high level on purpose. Detailed tutorials will expand each step as the official docs grow.
 
 ## Prerequisites
 
 Before you begin, you must have:
 
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
+- A Gamecart account.
+- Access to the dashboard at [dash.gamecart.gg](https://dash.gamecart.gg).
+- A game server or delivery workflow ready to receive purchase commands.
+- Payment provider credentials for the gateway you plan to enable.
 
 ## Get started
 
 <Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
-
-    ```bash
-    npm install your-package
-    ```
+  <Step title="Create your store">
+    Sign in to the dashboard and create a store with the name, subdomain, and currency you want to use for sales.
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
 
-    ```bash
-    your-cli init
-    ```
+  <Step title="Add your first product">
+    Create a product with clear pricing, delivery details, and any storefront content your players need before buying.
   </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
 
-    ```bash
-    your-cli start
-    ```
+  <Step title="Configure payments">
+    Enable the payment gateway for your region and store currency. Gamecart owns gateway availability and checkout routing.
+  </Step>
+
+  <Step title="Connect delivery">
+    Install and configure the Gamecart server integration so approved orders can queue delivery commands for your server.
+  </Step>
+
+  <Step title="Publish and test">
+    Open the storefront, place a controlled test order, and confirm that payment status, order details, and delivery behavior match the dashboard.
   </Step>
 </Steps>
 
 <Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
-
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
+  Need help while setting up? Join the [Gamecart community](https://discord.gg/gamecart).
 </Tip>

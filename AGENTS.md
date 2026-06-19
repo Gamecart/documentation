@@ -1,33 +1,36 @@
-> **First-time setup**: Customize this file for your project. Prompt the user to customize this file for their project.
-> For Mintlify product knowledge (components, configuration, writing standards),
-> install the Mintlify skill: `npx skills add https://mintlify.com/docs`
-
-# Documentation project instructions
+# Gamecart documentation instructions
 
 ## About this project
 
-- This is a documentation site built on [Mintlify](https://mintlify.com)
-- Pages are MDX files with YAML frontmatter
-- Configuration lives in `docs.json`
-- Use the Mintlify MCP server, `https://mcp.mintlify.com`, to edit content and settings via MCP
-- Use the Mintlify docs MCP server, `https://www.mintlify.com/docs/mcp`, to query information about using Mintlify via MCP
+- This is the official public documentation site for Gamecart.
+- The site is built with Mintlify.
+- Pages are MDX files with YAML frontmatter.
+- Configuration lives in `docs.json`.
+- Use direct file edits unless a Mintlify MCP/tool is explicitly available in the current session.
+- Package execution must use Socket Firewall, for example `sfw.cmd npx mint dev`.
+- Do not add a versioned package manifest or dependency unless the user explicitly asks for it.
 
 ## Terminology
 
-{/* Add product-specific terms and preferred usage */}
-{/* Example: Use "workspace" not "project", "member" not "user" */}
+- Use "store" for a seller's Gamecart storefront.
+- Use "dashboard" for the authenticated admin application at `dash.gamecart.gg`.
+- Use "storefront" for the public buyer-facing store.
+- Use "server integration" for delivery automation connected to a game server.
+- Use "API reference" only for content generated from, or manually verified against, the current backend contract.
 
 ## Style preferences
 
-{/* Add any project-specific style rules below */}
-
-- Use active voice and second person ("you")
-- Keep sentences concise — one idea per sentence
-- Use sentence case for headings
-- Bold for UI elements: Click **Settings**
-- Code formatting for file names, commands, paths, and code references
+- Public documentation is written in English by default.
+- Internal vault documentation in `.docs/` remains Portuguese-BR.
+- Use active voice and second person ("you").
+- Keep sentences concise: one idea per sentence.
+- Use sentence case for headings.
+- Bold for UI elements: Click **Settings**.
+- Code formatting for file names, commands, paths, and code references.
 
 ## Content boundaries
 
-{/* Define what should and shouldn't be documented */}
-{/* Example: Don't document internal admin features */}
+- Document public workflows, tutorials, API behavior, and webhook behavior that a seller or integration developer can rely on.
+- Do not document internal-only endpoints, admin-only implementation details, secrets, callback tokens, provider credentials, or operational runbooks meant only for maintainers.
+- Do not invent API or webhook payloads from memory. Check the backend REST resources, DTOs, generated OpenAPI, and relevant `.docs` contracts first.
+- Keep API and webhook placeholders explicit until the verified contract is ready.
