@@ -1,0 +1,234 @@
+---
+title: "Custom gateways"
+description: "Connect a store-owned payment gateway to Gamecart checkout"
+---
+
+Custom gateways let a store route checkout to a seller-owned payment provider. Gamecart creates the order, calls your payment creation endpoint, redirects the buyer to your `paymentUrl`, and waits for your signed callback.
+
+This guide documents the current contract implemented by Gamecart.
+
+## Flow
+
+<Steps>
+  <Step title="Configure the gateway">
+    Add a custom gateway in the dashboard with a public HTTPS `createPaymentUrl`. Gamecart generates a shared secret.
+  </Step>
+
+  <Step title="Buyer selects the gateway">
+    The storefront sends checkout with `gatewayType: "CUSTOM"` and the selected `customGatewayId`.
+  </Step>
+
+  <Step title="Gamecart creates a payment">
+    Gamecart persists a pending order, then sends a signed `payment.create` request to your `createPaymentUrl`.
+  </Step>
+
+  <Step title="You return a payment URL">
+    Your service returns a public HTTPS `paymentUrl`. Gamecart redirects the buyer there.
+  </Step>
+
+  <Step title="You confirm the result">
+    After payment, your service sends a signed callback to the Gamecart `callbackUrl` from the create-payment payload.
+  </Step>
+</Steps>
+
+## Dashboard configuration API
+
+The dashboard uses these endpoints:
+
+```http
+GET    /v1/stores/settings/custom-gateways
+POST   /v1/stores/settings/custom-gateways
+PUT    /v1/stores/settings/custom-gateways/{gatewayId}
+POST   /v1/stores/settings/custom-gateways/{gatewayId}/rotate-secret
+DELETE /v1/stores/settings/custom-gateways/{gatewayId}
+```
+
+They require dashboard authentication, `X-Store-Id`, CSRF protection on mutations, `READ_SETTINGS` or `UPDATE_SETTINGS`, and the `CUSTOM_GATEWAYS` plan feature.
+
+Create or update request:
+
+```json
+{
+  "name": "Acme Pay",
+  "description": "Card and Pix payments through Acme Pay",
+  "enabled": true,
+  "createPaymentUrl": "https://payments.example.com/gamecart/create-payment",
+  "requestTimeoutMs": 10000,
+  "sortOrder": 10,
+  "iconUrl": "https://payments.example.com/assets/acme-pay.png"
+}
+```
+
+Validation rules:
+
+| Field | Rule |
+| --- | --- |
+| `name` | Required, max `120` characters. |
+| `description` | Optional, max `500` characters. |
+| `createPaymentUrl` | Required, max `2048` characters, public HTTPS URL. |
+| `requestTimeoutMs` | Between `1000` and `30000`. |
+| `iconUrl` | Optional HTTPS URL. |
+
+Create and rotate responses include `rawSharedSecret` once:
+
+```json
+{
+  "gateway": {
+    "id": "3f173d60-2174-4e56-94ff-4fa3a4fd20a4",
+    "name": "Acme Pay",
+    "description": "Card and Pix payments through Acme Pay",
+    "enabled": true,
+    "createPaymentUrl": "https://payments.example.com/gamecart/create-payment",
+    "sharedSecretFingerprint": "••••••abc123",
+    "requestTimeoutMs": 10000,
+    "sortOrder": 10,
+    "iconUrl": "https://payments.example.com/assets/acme-pay.png",
+    "createdAt": "2026-06-27T13:00:00",
+    "updatedAt": "2026-06-27T13:00:00"
+  },
+  "rawSharedSecret": "gccgsec_..."
+}
+```
+
+## Storefront checkout request
+
+When a buyer selects a custom gateway, checkout uses the public storefront checkout endpoint:
+
+```http
+POST /v1/stores/checkout
+Content-Type: application/json
+```
+
+Relevant request fields:
+
+```json
+{
+  "gatewayType": "CUSTOM",
+  "customGatewayId": "3f173d60-2174-4e56-94ff-4fa3a4fd20a4",
+  "email": "alex@example.com",
+  "name": "Alex Player",
+  "accountIdentifierValue": "AlexInGame",
+  "successUrl": "https://store.example.com/success",
+  "cancelUrl": "https://store.example.com/cancel",
+  "cart": {
+    "items": []
+  }
+}
+```
+
+Rules:
+
+- `gatewayType: "CUSTOM"` requires `customGatewayId`.
+- Native gateways reject `customGatewayId`.
+- The custom gateway must belong to the store, be enabled, not deleted, allowed by plan, and have a safe public `createPaymentUrl`.
+- Gamecart revalidates the cart and totals before it calls your gateway.
+
+Checkout response:
+
+```json
+{
+  "orderId": "GC-7K9Q2X",
+  "redirectUrl": "https://payments.example.com/pay/abc",
+  "externalPaymentId": "pay_abc",
+  "gatewayType": "CUSTOM",
+  "customGatewayId": "3f173d60-2174-4e56-94ff-4fa3a4fd20a4"
+}
+```
+
+## Gamecart to your `createPaymentUrl`
+
+Gamecart sends a signed request:
+
+```http
+POST https://payments.example.com/gamecart/create-payment
+Content-Type: application/json
+Accept: application/json
+Gamecart-Signature: t=1782565500,v1=<hex_hmac_sha256>
+Gamecart-Timestamp: 1782565500
+Gamecart-Event-Id: payment.create:GC-7K9Q2X
+Gamecart-Event-Type: payment.create
+```
+
+Request body:
+
+```json
+{
+  "orderId": "GC-7K9Q2X",
+  "storeId": "7e4d76f4-55f9-4fbf-b0da-43fb1b13a914",
+  "customGatewayId": "3f173d60-2174-4e56-94ff-4fa3a4fd20a4",
+  "amount": 19.99,
+  "currency": "USD",
+  "items": [
+    {
+      "productId": 101,
+      "name": "VIP Rank",
+      "quantity": 1,
+      "unitPrice": 19.99
+    }
+  ],
+  "buyer": {
+    "name": "Alex Player",
+    "email": "alex@example.com",
+    "accountIdentifierValue": "AlexInGame"
+  },
+  "successUrl": "https://store.example.com/orders/GC-7K9Q2X",
+  "cancelUrl": "https://store.example.com/orders/GC-7K9Q2X",
+  "orderUrl": "https://store.example.com/payment/GC-7K9Q2X",
+  "callbackUrl": "https://api.gamecart.gg/v1/gateway/custom/7e4d76f4-55f9-4fbf-b0da-43fb1b13a914/3f173d60-2174-4e56-94ff-4fa3a4fd20a4/GC-7K9Q2X"
+}
+```
+
+Verify `Gamecart-Signature` with the shared secret before creating a payment. See [Webhook signatures](/webhooks/signatures) for the canonical string.
+
+Your response must be `2xx` JSON:
+
+```json
+{
+  "paymentUrl": "https://payments.example.com/pay/abc",
+  "externalPaymentId": "pay_abc"
+}
+```
+
+Rules:
+
+- `paymentUrl` is required.
+- `paymentUrl` must be an absolute public HTTPS URL.
+- `externalPaymentId` is optional and must be at most `255` characters.
+- Gamecart does not follow redirects when calling your `createPaymentUrl`.
+- If payment creation fails, Gamecart cancels the pending order and releases coupon reservations.
+
+## Your callback to Gamecart
+
+Send the result to the exact `callbackUrl` from the create-payment request:
+
+```http
+POST /v1/gateway/custom/{storeId}/{customGatewayId}/{orderId}
+Content-Type: application/json
+Gamecart-Signature: t=1782565800,v1=<hex_hmac_sha256>
+Gamecart-Event-Id: pay_abc:approved
+```
+
+Callback body:
+
+```json
+{
+  "eventId": "pay_abc:approved",
+  "status": "APPROVED",
+  "amount": 19.99,
+  "currency": "USD",
+  "occurredAt": "2026-06-27T13:10:00",
+  "externalPaymentId": "pay_abc"
+}
+```
+
+Rules:
+
+- `eventId` in the body must match `Gamecart-Event-Id`.
+- `status` must not be `PENDING`.
+- Allowed status values are `APPROVED`, `REJECTED`, `CANCELLED`, `REFUNDED`, and `DISPUTE`.
+- `amount` must match the order total exactly.
+- `currency` must match the order currency, case-insensitively.
+- The order must belong to the store and custom gateway in the URL.
+- Sign the raw JSON body with the shared secret and the same canonical payload format.
+
+Gamecart returns `202 Accepted` when the callback is accepted. Duplicate successful callback `eventId` values for the same custom gateway are idempotent.

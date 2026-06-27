@@ -37,6 +37,12 @@
               "index",
               "quickstart"
             ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/custom-gateways"
+            ]
           }
         ]
       },
@@ -59,7 +65,9 @@
           {
             "group": "API reference",
             "pages": [
-              "api-reference/overview"
+              "api-reference/overview",
+              "api-reference/api-tokens",
+              "api-reference/orders"
             ]
           }
         ]
@@ -71,7 +79,8 @@
           {
             "group": "Webhooks",
             "pages": [
-              "webhooks/overview"
+              "webhooks/overview",
+              "webhooks/signatures"
             ]
           }
         ]

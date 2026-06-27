@@ -1,0 +1,114 @@
+---
+title: "API tokens"
+description: "Create and manage seller API tokens for external integrations"
+---
+
+API tokens authenticate server-to-server calls to `/v1/seller/*`. Gamecart stores only token hashes and prefixes. The raw token is returned only when the token is created or rotated.
+
+<Warning>
+  Copy the raw token immediately. Gamecart cannot show it again after the create or rotate response.
+</Warning>
+
+## Create a token
+
+The dashboard uses this configuration endpoint:
+
+```http
+POST /v1/stores/integrations/api-tokens
+X-Store-Id: <store_uuid>
+Content-Type: application/json
+```
+
+This endpoint requires an authenticated dashboard session, CSRF protection, `MANAGE_INTEGRATIONS`, and the `API_ACCESS` plan feature.
+
+Request body:
+
+```json
+{
+  "name": "Fulfillment service",
+  "scopes": ["orders:read", "payments:read", "orders:buyer:read"]
+}
+```
+
+Response body:
+
+```json
+{
+  "token": {
+    "id": "8f9c1b60-12a4-4a9f-8f36-d6fd7c8b4f1a",
+    "name": "Fulfillment service",
+    "tokenPrefix": "gci_abc123",
+    "scopes": ["orders:buyer:read", "orders:read", "payments:read"],
+    "createdAt": "2026-06-27T13:00:00",
+    "lastUsedAt": null,
+    "revokedAt": null
+  },
+  "rawToken": "gci_..."
+}
+```
+
+`rawToken` appears only in create and rotate responses. Store it in your own secret manager.
+
+## List tokens
+
+```http
+GET /v1/stores/integrations/api-tokens?page=0&size=20
+X-Store-Id: <store_uuid>
+```
+
+Requires `READ_INTEGRATIONS` and `API_ACCESS`.
+
+The response is paginated and contains `StoreApiTokenDTO` items:
+
+```json
+{
+  "items": [
+    {
+      "id": "8f9c1b60-12a4-4a9f-8f36-d6fd7c8b4f1a",
+      "name": "Fulfillment service",
+      "tokenPrefix": "gci_abc123",
+      "scopes": ["orders:read", "payments:read"],
+      "createdAt": "2026-06-27T13:00:00",
+      "lastUsedAt": "2026-06-27T13:10:00",
+      "revokedAt": null
+    }
+  ],
+  "totalItems": 1,
+  "currentPage": 0,
+  "totalPages": 1,
+  "pageSize": 20
+}
+```
+
+## Rotate a token
+
+```http
+POST /v1/stores/integrations/api-tokens/{tokenId}/rotate
+X-Store-Id: <store_uuid>
+```
+
+Requires `MANAGE_INTEGRATIONS` and `API_ACCESS`.
+
+The response has the same shape as create and includes a new `rawToken`. Any old raw token value stops working after rotation.
+
+## Revoke a token
+
+```http
+POST /v1/stores/integrations/api-tokens/{tokenId}/revoke
+X-Store-Id: <store_uuid>
+```
+
+Requires `MANAGE_INTEGRATIONS` and `API_ACCESS`.
+
+The response returns the token metadata with `revokedAt` set. Revoked tokens cannot authenticate seller API calls.
+
+## Use a token
+
+Pass the raw token as a Bearer token:
+
+```http
+GET /v1/seller/orders
+Authorization: Bearer gci_...
+```
+
+Seller API calls are rate limited per token and endpoint. The current default is `120` requests per minute.

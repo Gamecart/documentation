@@ -1,20 +1,125 @@
 ---
 title: "Webhooks"
-description: "Public webhook documentation status and source of truth"
+description: "Receive signed order events from Gamecart"
 ---
 
-Public webhook documentation is coming soon.
+Gamecart can deliver order events to HTTPS endpoints that you configure for a store. Webhooks are outbound notifications from Gamecart to your application.
 
-Gamecart webhook docs must be based on verified backend callback contracts and internal vault notes. Do not publish provider secrets, callback tokens, internal reconciliation details, or example payloads that have not been checked against the current backend.
+Webhook delivery requires the store plan feature `WEBHOOK`. Endpoints are configured from the dashboard integration area.
 
-<Info>
-  This page is a placeholder for public seller-facing webhook documentation, not a contract by itself.
-</Info>
+## Configure an endpoint
 
-## Documentation source
+The dashboard uses these configuration endpoints:
 
-When this section is expanded, webhook pages should be verified against:
+```http
+GET    /v1/stores/integrations/webhooks
+POST   /v1/stores/integrations/webhooks
+PUT    /v1/stores/integrations/webhooks/{endpointId}
+DELETE /v1/stores/integrations/webhooks/{endpointId}
+POST   /v1/stores/integrations/webhooks/{endpointId}/rotate-secret
+GET    /v1/stores/integrations/webhooks/{endpointId}/deliveries
+POST   /v1/stores/integrations/webhooks/deliveries/{deliveryId}/retry
+```
 
-- Backend callback resources and DTOs.
-- Gateway and notification contracts in `.docs/`.
-- Current security rules for signatures, callback tokens, and secret redaction.
+These endpoints require dashboard authentication, `X-Store-Id`, CSRF protection on mutations, and integration permissions.
+
+Create or update request:
+
+```json
+{
+  "name": "Production webhook consumer",
+  "url": "https://example.com/gamecart/webhooks",
+  "enabled": true,
+  "events": ["order.created", "order.payment_approved"]
+}
+```
+
+Create and rotate responses include `rawSecret` once:
+
+```json
+{
+  "endpoint": {
+    "id": "c8e8bf1d-df0d-4f10-a9e3-f98a82ac9fb4",
+    "name": "Production webhook consumer",
+    "url": "https://example.com/gamecart/webhooks",
+    "enabled": true,
+    "secretFingerprint": "••••••abc123",
+    "events": ["order.created", "order.payment_approved"],
+    "createdAt": "2026-06-27T13:00:00",
+    "updatedAt": "2026-06-27T13:00:00"
+  },
+  "rawSecret": "..."
+}
+```
+
+Store `rawSecret` securely. Gamecart shows only the fingerprint later.
+
+## Event types
+
+| Event | When it is created |
+| --- | --- |
+| `order.created` | A checkout order is created and finalized with a redirect URL. |
+| `order.payment_approved` | Payment status changes to `APPROVED`. |
+| `order.payment_rejected` | Payment status changes to `REJECTED`. |
+| `order.payment_cancelled` | Payment status changes to `CANCELLED`. |
+| `order.payment_refunded` | Payment status changes to `REFUNDED`. |
+| `order.payment_dispute` | Payment status changes to `DISPUTE`. |
+
+Manual-order approval events are not sent as seller webhooks.
+
+## Delivery payload
+
+Gamecart sends JSON with this shape:
+
+```json
+{
+  "eventId": "order.payment_approved:GC-7K9Q2X",
+  "eventType": "order.payment_approved",
+  "createdAt": "2026-06-27T13:05:00",
+  "order": {
+    "orderId": "GC-7K9Q2X",
+    "paymentStatus": "APPROVED",
+    "gatewayType": "STRIPE",
+    "amount": 19.99,
+    "currency": "USD"
+  }
+}
+```
+
+`eventId` is stable for the order and event type. Use it as your idempotency key.
+
+## Delivery headers
+
+```http
+Content-Type: application/json
+User-Agent: Gamecart-Webhooks/1.0
+Gamecart-Event-Id: order.payment_approved:GC-7K9Q2X
+Gamecart-Event-Type: order.payment_approved
+Gamecart-Signature: t=1782565500,v1=<hex_hmac_sha256>
+```
+
+See [Webhook signatures](/webhooks/signatures) for verification.
+
+## Retries
+
+Gamecart treats any `2xx` response as delivered.
+
+For non-`2xx` responses, network failures, or invalid targets, Gamecart records the attempt and retries up to `5` attempts. Retry delay is `attemptCount * 5` minutes after each failed attempt.
+
+Delivery logs expose:
+
+```json
+{
+  "id": "9e21b8be-56bd-4f9d-bf9c-9089f4f0a9ed",
+  "eventId": "order.payment_approved:GC-7K9Q2X",
+  "eventType": "order.payment_approved",
+  "status": "PENDING",
+  "attemptCount": 1,
+  "lastStatusCode": 500,
+  "lastError": "HTTP 500",
+  "nextAttemptAt": "2026-06-27T13:10:00",
+  "createdAt": "2026-06-27T13:05:00"
+}
+```
+
+Delivery statuses are `PENDING`, `SENT`, and `FAILED`.

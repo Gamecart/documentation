@@ -1,0 +1,120 @@
+---
+title: "Orders API"
+description: "Read store orders and payment status with seller API tokens"
+---
+
+The Orders API is the first seller API surface. It is read-only and scoped to the store that owns the API token.
+
+All endpoints require:
+
+```http
+Authorization: Bearer <api_token>
+```
+
+## List recent orders
+
+```http
+GET /v1/seller/orders?page=0&size=20
+```
+
+Required scope: `orders:read`.
+
+Response:
+
+```json
+{
+  "items": [
+    {
+      "orderId": "GC-7K9Q2X",
+      "createdAt": "2026-06-27T13:00:00",
+      "paymentStatus": "APPROVED",
+      "gatewayType": "STRIPE",
+      "customGatewayId": null,
+      "customGatewayName": null,
+      "amount": 19.99,
+      "currency": "USD"
+    }
+  ],
+  "totalItems": 1,
+  "currentPage": 0,
+  "totalPages": 1,
+  "pageSize": 20
+}
+```
+
+`customGatewayId` and `customGatewayName` are nullable in the current seller API response.
+
+## Get one order
+
+```http
+GET /v1/seller/orders/{orderId}
+```
+
+Required scope: `orders:read`.
+
+Response:
+
+```json
+{
+  "order": {
+    "orderId": "GC-7K9Q2X",
+    "createdAt": "2026-06-27T13:00:00",
+    "paymentStatus": "APPROVED",
+    "gatewayType": "CUSTOM",
+    "customGatewayId": null,
+    "customGatewayName": null,
+    "amount": 19.99,
+    "currency": "USD"
+  },
+  "buyer": {
+    "name": "Alex Player",
+    "email": "alex@example.com",
+    "accountIdentifierValue": "AlexInGame"
+  },
+  "items": [
+    {
+      "name": "VIP Rank",
+      "quantity": 1,
+      "productId": 101
+    }
+  ]
+}
+```
+
+`buyer` is returned only when the token has `orders:buyer:read`. Without that scope, `buyer` is `null`.
+
+## Get payment status
+
+```http
+GET /v1/seller/orders/{orderId}/payment-status
+```
+
+Required scope: `payments:read`.
+
+Response:
+
+```json
+{
+  "orderId": "GC-7K9Q2X",
+  "paymentStatus": "APPROVED",
+  "gatewayType": "STRIPE",
+  "customGatewayId": null,
+  "paidAt": "2026-06-27T13:05:00",
+  "cancelledAt": null
+}
+```
+
+Payment statuses:
+
+| Status | Meaning |
+| --- | --- |
+| `PENDING` | Checkout was created and is waiting for payment. |
+| `APPROVED` | Payment was approved. This is the revenue-eligible status. |
+| `REJECTED` | Payment was rejected. |
+| `CANCELLED` | Checkout or payment was cancelled. |
+| `REFUNDED` | Payment was refunded by the gateway. |
+| `DISPUTE` | Payment entered dispute or chargeback state. |
+
+## Not found and access denied
+
+If the token belongs to another store, or the order does not exist, Gamecart returns a Problem Details error instead of exposing which condition happened.

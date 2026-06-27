@@ -2,7 +2,7 @@
 
 Official public documentation for Gamecart.
 
-This site is built with Mintlify and lives in `projects/documentation`.
+This site is built with Mintlify and lives in `C:\Users\tanz\Documents\develop\gamecart\repos\documentation`.
 
 ## Development
 

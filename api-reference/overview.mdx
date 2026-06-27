@@ -1,21 +1,91 @@
 ---
 title: "API reference"
-description: "Public API documentation status and source of truth"
+description: "Verified seller-facing API contracts for Gamecart integrations"
 ---
 
-The public API reference is coming soon.
+Gamecart exposes a narrow seller API for external integrations, plus dashboard-managed configuration surfaces for API tokens, outbound webhooks, and custom gateways.
 
-Gamecart's backend REST resources, DTOs, and generated OpenAPI output are the source of truth for API documentation. This section must not be filled from old specs, memory, or examples that have not been checked against the current backend.
+These pages are verified against the current backend REST resources and DTOs. Do not rely on older drafts or examples from support conversations.
 
-<Info>
-  Until the generated or verified reference is published, use dashboard workflows and tutorials instead of relying on undocumented API shapes.
-</Info>
+## Base URLs
 
-## Documentation source
+Use the production API origin for external calls:
 
-When this section is expanded, API pages should be generated from or manually verified against:
+```text
+https://api.gamecart.gg
+```
 
-- Current backend REST resources.
-- Current request and response DTOs.
-- Current OpenAPI output from the backend development environment.
-- Relevant internal vault contracts in `.docs/`.
+Storefront checkout helpers use this scoped base:
+
+```text
+https://api.gamecart.gg/v1/stores
+```
+
+Dashboard configuration APIs are called by the authenticated dashboard. They use dashboard cookies, CSRF protection, and `X-Store-Id`. External server-to-server integrations should use seller API tokens instead.
+
+## Authentication modes
+
+| Surface | Auth | Main use |
+| --- | --- | --- |
+| Seller API | `Authorization: Bearer <api_token>` | Read store orders and payment status from your integration. |
+| Dashboard configuration API | Dashboard session cookies, CSRF, `X-Store-Id` | Manage API tokens, webhook endpoints, and custom gateway settings from the dashboard. |
+| Custom gateway callback | `Gamecart-Signature` and `Gamecart-Event-Id` | Confirm a custom gateway payment back to Gamecart. |
+| Outbound webhooks | `Gamecart-Signature`, `Gamecart-Event-Id`, `Gamecart-Event-Type` | Receive Gamecart order events on your endpoint. |
+
+## Pagination
+
+List endpoints return the shared paged response shape:
+
+```json
+{
+  "items": [],
+  "totalItems": 0,
+  "currentPage": 0,
+  "totalPages": 0,
+  "pageSize": 20
+}
+```
+
+Supported query parameters are `page` and `size`. Page indexes start at `0`. Current list endpoints clamp `size` to a maximum of `100`.
+
+## Error format
+
+API errors use Problem Details:
+
+```json
+{
+  "type": "https://gamecart.gg/problems/INVALID_INTEGRATION_TOKEN",
+  "title": "Unauthorized",
+  "status": 401,
+  "detail": "The integration token is invalid or revoked.",
+  "code": "INVALID_INTEGRATION_TOKEN",
+  "traceId": "..."
+}
+```
+
+The exact `detail` text is localized by the backend. Integrations should branch on HTTP status and `code`, not on translated text.
+
+## Scopes
+
+API tokens use explicit scopes:
+
+| Scope | Allows |
+| --- | --- |
+| `orders:read` | List orders and read order details. |
+| `payments:read` | Read payment status for an order. |
+| `orders:buyer:read` | Include buyer name, email, and account identifier in order detail responses. |
+
+<CardGroup cols={2}>
+  <Card title="API tokens" icon="key-round" href="/api-reference/api-tokens">
+    Create tokens, understand scopes, and see token response fields.
+  </Card>
+  <Card title="Orders API" icon="shopping-bag" href="/api-reference/orders">
+    Read orders and payment status with a seller API token.
+  </Card>
+  <Card title="Webhooks" icon="radio-tower" href="/webhooks/overview">
+    Receive signed order events from Gamecart.
+  </Card>
+  <Card title="Custom gateways" icon="credit-card" href="/guides/custom-gateways">
+    Connect a store-owned payment gateway to checkout.
+  </Card>
+</CardGroup>

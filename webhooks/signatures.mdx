@@ -1,0 +1,84 @@
+---
+title: "Webhook signatures"
+description: "Verify Gamecart HMAC signatures for outbound webhooks and custom gateway callbacks"
+---
+
+Gamecart signs webhook payloads with HMAC-SHA256. Always verify the signature before processing the event.
+
+## Header format
+
+Outbound webhooks use:
+
+```http
+Gamecart-Signature: t=<unix_epoch_seconds>,v1=<hex_hmac_sha256>
+Gamecart-Event-Id: <event_id>
+```
+
+The timestamp is inside `Gamecart-Signature`. Outbound webhooks do not require a separate `Gamecart-Timestamp` header.
+
+Custom gateway `payment.create` requests include both the signature header and a separate timestamp header:
+
+```http
+Gamecart-Signature: t=<unix_epoch_seconds>,v1=<hex_hmac_sha256>
+Gamecart-Timestamp: <unix_epoch_seconds>
+Gamecart-Event-Id: payment.create:<orderId>
+Gamecart-Event-Type: payment.create
+```
+
+Use the timestamp from `Gamecart-Signature` when verifying the HMAC.
+
+## Canonical payload
+
+Build the signed string exactly like this:
+
+```text
+<timestamp>.<eventId>.<rawBody>
+```
+
+Rules:
+
+- `timestamp` is the `t` value from `Gamecart-Signature`.
+- `eventId` is the `Gamecart-Event-Id` header.
+- `rawBody` is the exact request body bytes decoded as the same JSON string you received.
+- Do not parse and reserialize JSON before verification.
+
+## Verification window
+
+Reject signatures outside a `5` minute clock-skew window. Gamecart uses the same tolerance for custom gateway callbacks.
+
+## Node.js example
+
+```js
+import crypto from "node:crypto";
+
+function verifyGamecartSignature({ secret, signatureHeader, eventId, rawBody }) {
+  const parts = Object.fromEntries(
+    signatureHeader.split(",").map((part) => {
+      const [key, value] = part.trim().split("=", 2);
+      return [key, value];
+    })
+  );
+
+  const timestamp = Number(parts.t);
+  const submitted = parts.v1;
+  if (!Number.isFinite(timestamp) || !/^[a-f0-9]{64}$/i.test(submitted ?? "")) {
+    return false;
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  if (Math.abs(now - timestamp) > 5 * 60) return false;
+
+  const canonical = `${timestamp}.${eventId}.${rawBody}`;
+  const expected = crypto
+    .createHmac("sha256", secret)
+    .update(canonical, "utf8")
+    .digest("hex");
+
+  return crypto.timingSafeEqual(
+    Buffer.from(expected, "hex"),
+    Buffer.from(submitted, "hex")
+  );
+}
+```
+
+Store processed `eventId` values in your application. If Gamecart retries the same event, return `2xx` after confirming it was already handled.
