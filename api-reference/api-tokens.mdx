@@ -1,108 +1,67 @@
 ---
 title: "API tokens"
-description: "Create and manage seller API tokens for external integrations"
+description: "Create seller API tokens from the Gamecart dashboard"
 ---
 
-API tokens authenticate server-to-server calls to `/v1/seller/*`. Gamecart stores only token hashes and prefixes. The raw token is returned only when the token is created or rotated.
+API tokens authenticate server-to-server calls to `/v1/seller/*`. Use them when your own backend needs to read Gamecart orders or payment status.
+
+Gamecart stores only token hashes and prefixes. The raw token is shown only once when you create or rotate it.
 
 <Warning>
-  Copy the raw token immediately. Gamecart cannot show it again after the create or rotate response.
+  Copy the raw token immediately and store it in your secret manager. Gamecart cannot show the same token again.
 </Warning>
 
-## Create a token
+## Before you begin
 
-The dashboard uses this configuration endpoint:
+You need:
 
-```http
-POST /v1/stores/integrations/api-tokens
-X-Store-Id: <store_uuid>
-Content-Type: application/json
-```
+- Access to the Gamecart dashboard.
+- A selected store.
+- Permission to manage integrations for that store.
+- A plan that includes API access.
+- A backend service that can keep secrets outside browser code.
 
-This endpoint requires an authenticated dashboard session, CSRF protection, `MANAGE_INTEGRATIONS`, and the `API_ACCESS` plan feature.
+## Create a token in the dashboard
 
-Request body:
+<Steps>
+  <Step title="Open the integrations area">
+    In the dashboard, select your store and open **Integrations**.
+  </Step>
 
-```json
-{
-  "name": "Fulfillment service",
-  "scopes": ["orders:read", "payments:read", "orders:buyer:read"]
-}
-```
+  <Step title="Open API tokens">
+    Choose **API** from the integrations menu.
+  </Step>
 
-Response body:
+  <Step title="Create a token">
+    Click **Create token**. Use a name that identifies the system that will use it, such as `Fulfillment service` or `Analytics sync`.
+  </Step>
 
-```json
-{
-  "token": {
-    "id": "8f9c1b60-12a4-4a9f-8f36-d6fd7c8b4f1a",
-    "name": "Fulfillment service",
-    "tokenPrefix": "gci_abc123",
-    "scopes": ["orders:buyer:read", "orders:read", "payments:read"],
-    "createdAt": "2026-06-27T13:00:00",
-    "lastUsedAt": null,
-    "revokedAt": null
-  },
-  "rawToken": "gci_..."
-}
-```
+  <Step title="Choose scopes">
+    Select only the scopes your integration needs. Start narrow and add scopes later when the integration requires them.
+  </Step>
 
-`rawToken` appears only in create and rotate responses. Store it in your own secret manager.
+  <Step title="Copy the token">
+    After saving, copy the token shown by Gamecart and store it securely. Treat it like a password.
+  </Step>
+</Steps>
 
-## List tokens
+## Choose scopes
 
-```http
-GET /v1/stores/integrations/api-tokens?page=0&size=20
-X-Store-Id: <store_uuid>
-```
+| Scope | Choose it when |
+| --- | --- |
+| `orders:read` | Your integration needs to list orders or fetch order details. |
+| `payments:read` | Your integration needs to check payment status for an order. |
+| `orders:buyer:read` | Your integration needs buyer name, email, or account identifier. |
 
-Requires `READ_INTEGRATIONS` and `API_ACCESS`.
+If you are building delivery automation, start with `orders:read` and `payments:read`. Add `orders:buyer:read` only if the external system needs buyer identity fields.
 
-The response is paginated and contains `StoreApiTokenDTO` items:
+## Rotate or revoke a token
 
-```json
-{
-  "items": [
-    {
-      "id": "8f9c1b60-12a4-4a9f-8f36-d6fd7c8b4f1a",
-      "name": "Fulfillment service",
-      "tokenPrefix": "gci_abc123",
-      "scopes": ["orders:read", "payments:read"],
-      "createdAt": "2026-06-27T13:00:00",
-      "lastUsedAt": "2026-06-27T13:10:00",
-      "revokedAt": null
-    }
-  ],
-  "totalItems": 1,
-  "currentPage": 0,
-  "totalPages": 1,
-  "pageSize": 20
-}
-```
+Use **Rotate** when a token may have leaked or when your secret rotation policy requires a new value. Gamecart shows the new raw token once, and the previous value stops working.
 
-## Rotate a token
+Use **Revoke** when an integration is retired or no longer trusted. Revoked tokens cannot authenticate seller API calls.
 
-```http
-POST /v1/stores/integrations/api-tokens/{tokenId}/rotate
-X-Store-Id: <store_uuid>
-```
-
-Requires `MANAGE_INTEGRATIONS` and `API_ACCESS`.
-
-The response has the same shape as create and includes a new `rawToken`. Any old raw token value stops working after rotation.
-
-## Revoke a token
-
-```http
-POST /v1/stores/integrations/api-tokens/{tokenId}/revoke
-X-Store-Id: <store_uuid>
-```
-
-Requires `MANAGE_INTEGRATIONS` and `API_ACCESS`.
-
-The response returns the token metadata with `revokedAt` set. Revoked tokens cannot authenticate seller API calls.
-
-## Use a token
+## Use a token from your backend
 
 Pass the raw token as a Bearer token:
 
@@ -111,4 +70,14 @@ GET /v1/seller/orders
 Authorization: Bearer gci_...
 ```
 
+Never expose the token in storefront JavaScript, public repositories, logs, screenshots, or support messages.
+
 Seller API calls are rate limited per token and endpoint. The current default is `120` requests per minute.
+
+## Recommended setup
+
+- Create one token per external system.
+- Name tokens after the system, not a person.
+- Keep scopes minimal.
+- Rotate tokens after team member offboarding or suspected leakage.
+- Revoke unused tokens instead of keeping them as backups.

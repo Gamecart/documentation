@@ -1,58 +1,55 @@
 ---
 title: "Webhooks"
-description: "Receive signed order events from Gamecart"
+description: "Configure signed order events from the Gamecart dashboard"
 ---
 
-Gamecart can deliver order events to HTTPS endpoints that you configure for a store. Webhooks are outbound notifications from Gamecart to your application.
+Gamecart can deliver order events to an HTTPS endpoint that you control. Webhooks are outbound notifications from Gamecart to your application.
 
-Webhook delivery requires the store plan feature `WEBHOOK`. Endpoints are configured from the dashboard integration area.
+Webhook delivery requires a store plan with the `WEBHOOK` feature.
 
-## Configure an endpoint
+## Before you begin
 
-The dashboard uses these configuration endpoints:
+You need:
 
-```http
-GET    /v1/stores/integrations/webhooks
-POST   /v1/stores/integrations/webhooks
-PUT    /v1/stores/integrations/webhooks/{endpointId}
-DELETE /v1/stores/integrations/webhooks/{endpointId}
-POST   /v1/stores/integrations/webhooks/{endpointId}/rotate-secret
-GET    /v1/stores/integrations/webhooks/{endpointId}/deliveries
-POST   /v1/stores/integrations/webhooks/deliveries/{deliveryId}/retry
-```
+- A public HTTPS endpoint that can receive `POST` requests.
+- Access to the Gamecart dashboard.
+- Permission to manage integrations for the store.
+- A plan that includes webhooks.
+- A place to store the webhook secret securely.
 
-These endpoints require dashboard authentication, `X-Store-Id`, CSRF protection on mutations, and integration permissions.
+Your endpoint should respond quickly. Do any slow work asynchronously after you accept the event.
 
-Create or update request:
+## Add a webhook endpoint in the dashboard
 
-```json
-{
-  "name": "Production webhook consumer",
-  "url": "https://example.com/gamecart/webhooks",
-  "enabled": true,
-  "events": ["order.created", "order.payment_approved"]
-}
-```
+<Steps>
+  <Step title="Open the integrations area">
+    In the dashboard, select your store and open **Integrations**.
+  </Step>
 
-Create and rotate responses include `rawSecret` once:
+  <Step title="Open Webhooks">
+    Choose **Webhooks** from the integrations menu.
+  </Step>
 
-```json
-{
-  "endpoint": {
-    "id": "c8e8bf1d-df0d-4f10-a9e3-f98a82ac9fb4",
-    "name": "Production webhook consumer",
-    "url": "https://example.com/gamecart/webhooks",
-    "enabled": true,
-    "secretFingerprint": "••••••abc123",
-    "events": ["order.created", "order.payment_approved"],
-    "createdAt": "2026-06-27T13:00:00",
-    "updatedAt": "2026-06-27T13:00:00"
-  },
-  "rawSecret": "..."
-}
-```
+  <Step title="Create an endpoint">
+    Click **Create endpoint** and enter a clear name, such as `Production order worker`.
+  </Step>
 
-Store `rawSecret` securely. Gamecart shows only the fingerprint later.
+  <Step title="Enter the destination URL">
+    Paste your public HTTPS webhook URL. Gamecart validates external URLs before saving or delivering events.
+  </Step>
+
+  <Step title="Choose events">
+    Select the order events your application needs. Start with the smallest useful set.
+  </Step>
+
+  <Step title="Save and copy the secret">
+    After saving, copy the webhook secret and store it securely. Gamecart shows it only once.
+  </Step>
+
+  <Step title="Send a real test event">
+    Place a controlled checkout order and confirm your endpoint receives the expected event and verifies the signature.
+  </Step>
+</Steps>
 
 ## Event types
 
@@ -100,26 +97,22 @@ Gamecart-Signature: t=1782565500,v1=<hex_hmac_sha256>
 
 See [Webhook signatures](/webhooks/signatures) for verification.
 
+## Review delivery logs
+
+Use the **Deliveries** view for an endpoint to inspect recent attempts. Each delivery shows the event id, event type, status, attempt count, last HTTP status, last error, and next retry time when applicable.
+
+Delivery statuses are:
+
+| Status | Meaning |
+| --- | --- |
+| `PENDING` | Gamecart has not delivered the event successfully yet, or it is waiting for a retry. |
+| `SENT` | Your endpoint returned a `2xx` response. |
+| `FAILED` | Gamecart exhausted all retry attempts. |
+
 ## Retries
 
 Gamecart treats any `2xx` response as delivered.
 
 For non-`2xx` responses, network failures, or invalid targets, Gamecart records the attempt and retries up to `5` attempts. Retry delay is `attemptCount * 5` minutes after each failed attempt.
 
-Delivery logs expose:
-
-```json
-{
-  "id": "9e21b8be-56bd-4f9d-bf9c-9089f4f0a9ed",
-  "eventId": "order.payment_approved:GC-7K9Q2X",
-  "eventType": "order.payment_approved",
-  "status": "PENDING",
-  "attemptCount": 1,
-  "lastStatusCode": 500,
-  "lastError": "HTTP 500",
-  "nextAttemptAt": "2026-06-27T13:10:00",
-  "createdAt": "2026-06-27T13:05:00"
-}
-```
-
-Delivery statuses are `PENDING`, `SENT`, and `FAILED`.
+If your endpoint receives the same `eventId` more than once, process it once and return `2xx` for later duplicates.

@@ -3,7 +3,7 @@ title: "API reference"
 description: "Verified seller-facing API contracts for Gamecart integrations"
 ---
 
-Gamecart exposes a narrow seller API for external integrations, plus dashboard-managed configuration surfaces for API tokens, outbound webhooks, and custom gateways.
+Gamecart exposes a narrow seller API for external integrations, plus signed webhooks and custom gateway contracts.
 
 These pages are verified against the current backend REST resources and DTOs. Do not rely on older drafts or examples from support conversations.
 
@@ -21,20 +21,20 @@ Storefront checkout helpers use this scoped base:
 https://api.gamecart.gg/v1/stores
 ```
 
-Dashboard configuration APIs are called by the authenticated dashboard. They use dashboard cookies, CSRF protection, and `X-Store-Id`. External server-to-server integrations should use seller API tokens instead.
+API tokens, webhook endpoints, and gateway settings are created from the Gamecart dashboard. The public docs explain those dashboard workflows and only show raw HTTP contracts for calls your own integration needs to make or receive.
 
 ## Authentication modes
 
 | Surface | Auth | Main use |
 | --- | --- | --- |
 | Seller API | `Authorization: Bearer <api_token>` | Read store orders and payment status from your integration. |
-| Dashboard configuration API | Dashboard session cookies, CSRF, `X-Store-Id` | Manage API tokens, webhook endpoints, and custom gateway settings from the dashboard. |
-| Custom gateway callback | `Gamecart-Signature` and `Gamecart-Event-Id` | Confirm a custom gateway payment back to Gamecart. |
 | Outbound webhooks | `Gamecart-Signature`, `Gamecart-Event-Id`, `Gamecart-Event-Type` | Receive Gamecart order events on your endpoint. |
+| Custom gateway requests | `Gamecart-Signature`, `Gamecart-Event-Id`, `Gamecart-Event-Type` | Verify payment creation requests sent by Gamecart. |
+| Custom gateway callback | `Gamecart-Signature` and `Gamecart-Event-Id` | Confirm a custom gateway payment back to Gamecart. |
 
 ## Pagination
 
-List endpoints return the shared paged response shape:
+Seller API list endpoints return the shared paged response shape:
 
 ```json
 {
@@ -77,13 +77,13 @@ API tokens use explicit scopes:
 
 <CardGroup cols={2}>
   <Card title="API tokens" icon="key-round" href="/api-reference/api-tokens">
-    Create tokens, understand scopes, and see token response fields.
+    Create tokens from the dashboard, choose scopes, and copy the token safely.
   </Card>
   <Card title="Orders API" icon="shopping-bag" href="/api-reference/orders">
     Read orders and payment status with a seller API token.
   </Card>
   <Card title="Webhooks" icon="radio-tower" href="/webhooks/overview">
-    Receive signed order events from Gamecart.
+    Configure webhook endpoints in the dashboard and receive signed order events.
   </Card>
   <Card title="Custom gateways" icon="credit-card" href="/guides/custom-gateways">
     Connect a store-owned payment gateway to checkout.

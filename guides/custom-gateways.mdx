@@ -11,7 +11,7 @@ This guide documents the current contract implemented by Gamecart.
 
 <Steps>
   <Step title="Configure the gateway">
-    Add a custom gateway in the dashboard with a public HTTPS `createPaymentUrl`. Gamecart generates a shared secret.
+    Add a custom gateway in the dashboard with a public HTTPS payment creation URL. Gamecart generates a shared secret.
   </Step>
 
   <Step title="Buyer selects the gateway">
@@ -19,7 +19,7 @@ This guide documents the current contract implemented by Gamecart.
   </Step>
 
   <Step title="Gamecart creates a payment">
-    Gamecart persists a pending order, then sends a signed `payment.create` request to your `createPaymentUrl`.
+    Gamecart persists a pending order, then sends a signed `payment.create` request to your payment creation URL.
   </Step>
 
   <Step title="You return a payment URL">
@@ -31,64 +31,47 @@ This guide documents the current contract implemented by Gamecart.
   </Step>
 </Steps>
 
-## Dashboard configuration API
+## Configure a custom gateway in the dashboard
 
-The dashboard uses these endpoints:
+<Steps>
+  <Step title="Open payment settings">
+    In the dashboard, select your store and open **Settings**. Then open **Gateways**.
+  </Step>
 
-```http
-GET    /v1/stores/settings/custom-gateways
-POST   /v1/stores/settings/custom-gateways
-PUT    /v1/stores/settings/custom-gateways/{gatewayId}
-POST   /v1/stores/settings/custom-gateways/{gatewayId}/rotate-secret
-DELETE /v1/stores/settings/custom-gateways/{gatewayId}
-```
+  <Step title="Create a custom gateway">
+    In the custom gateways area, click **Create custom gateway**.
+  </Step>
 
-They require dashboard authentication, `X-Store-Id`, CSRF protection on mutations, `READ_SETTINGS` or `UPDATE_SETTINGS`, and the `CUSTOM_GATEWAYS` plan feature.
+  <Step title="Fill in display details">
+    Add the gateway name, optional description, sort order, and optional icon URL. These values help buyers recognize the payment method at checkout.
+  </Step>
 
-Create or update request:
+  <Step title="Enter the payment creation URL">
+    Paste the public HTTPS URL where your service receives Gamecart payment creation requests.
+  </Step>
 
-```json
-{
-  "name": "Acme Pay",
-  "description": "Card and Pix payments through Acme Pay",
-  "enabled": true,
-  "createPaymentUrl": "https://payments.example.com/gamecart/create-payment",
-  "requestTimeoutMs": 10000,
-  "sortOrder": 10,
-  "iconUrl": "https://payments.example.com/assets/acme-pay.png"
-}
-```
+  <Step title="Choose the timeout and enabled state">
+    Pick a request timeout between `1000` and `30000` milliseconds. Keep the gateway disabled until your endpoint is ready.
+  </Step>
 
-Validation rules:
+  <Step title="Save and copy the shared secret">
+    After saving, copy the shared secret and store it securely. Gamecart shows it only once.
+  </Step>
+
+  <Step title="Enable and test checkout">
+    Enable the gateway, place a controlled checkout order, verify the signed `payment.create` request, and send a callback for the test order.
+  </Step>
+</Steps>
+
+Configuration fields:
 
 | Field | Rule |
 | --- | --- |
-| `name` | Required, max `120` characters. |
-| `description` | Optional, max `500` characters. |
-| `createPaymentUrl` | Required, max `2048` characters, public HTTPS URL. |
-| `requestTimeoutMs` | Between `1000` and `30000`. |
-| `iconUrl` | Optional HTTPS URL. |
-
-Create and rotate responses include `rawSharedSecret` once:
-
-```json
-{
-  "gateway": {
-    "id": "3f173d60-2174-4e56-94ff-4fa3a4fd20a4",
-    "name": "Acme Pay",
-    "description": "Card and Pix payments through Acme Pay",
-    "enabled": true,
-    "createPaymentUrl": "https://payments.example.com/gamecart/create-payment",
-    "sharedSecretFingerprint": "••••••abc123",
-    "requestTimeoutMs": 10000,
-    "sortOrder": 10,
-    "iconUrl": "https://payments.example.com/assets/acme-pay.png",
-    "createdAt": "2026-06-27T13:00:00",
-    "updatedAt": "2026-06-27T13:00:00"
-  },
-  "rawSharedSecret": "gccgsec_..."
-}
-```
+| Name | Required, max `120` characters. |
+| Description | Optional, max `500` characters. |
+| Payment creation URL | Required, max `2048` characters, public HTTPS URL. |
+| Request timeout | Between `1000` and `30000` milliseconds. |
+| Icon URL | Optional HTTPS URL. |
 
 ## Storefront checkout request
 
@@ -120,7 +103,7 @@ Rules:
 
 - `gatewayType: "CUSTOM"` requires `customGatewayId`.
 - Native gateways reject `customGatewayId`.
-- The custom gateway must belong to the store, be enabled, not deleted, allowed by plan, and have a safe public `createPaymentUrl`.
+- The custom gateway must belong to the store, be enabled, not deleted, allowed by plan, and have a safe public payment creation URL.
 - Gamecart revalidates the cart and totals before it calls your gateway.
 
 Checkout response:
@@ -135,7 +118,7 @@ Checkout response:
 }
 ```
 
-## Gamecart to your `createPaymentUrl`
+## Gamecart to your payment creation URL
 
 Gamecart sends a signed request:
 
@@ -194,7 +177,7 @@ Rules:
 - `paymentUrl` is required.
 - `paymentUrl` must be an absolute public HTTPS URL.
 - `externalPaymentId` is optional and must be at most `255` characters.
-- Gamecart does not follow redirects when calling your `createPaymentUrl`.
+- Gamecart does not follow redirects when calling your payment creation URL.
 - If payment creation fails, Gamecart cancels the pending order and releases coupon reservations.
 
 ## Your callback to Gamecart
